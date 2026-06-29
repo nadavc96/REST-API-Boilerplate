@@ -8,6 +8,9 @@ const envSchema = z.object({
     .min(1, "ALLOWED_ORIGINS cannot be empty")
     .transform((val) => val.split(",")),
   JWT_SECRET: z.string(),
+  JWT_ACCESS_EXPIRY: z.string().default("15m"),
+  JWT_REFRESH_EXPIRY: z.string().default("7d"),
+  REFRESH_TOKEN_EXPIRY_DAYS: z.coerce.number().default(7),
 });
 
 const parsedSchema = envSchema.safeParse(process.env);

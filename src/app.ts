@@ -2,7 +2,9 @@ import express, { ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import { env } from "./config/env";
+import authRouter from "./modules/auth/auth.routes";
 
 const app = express();
 
@@ -27,8 +29,11 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use(express.json({ limit: "10kb" }));
+app.use(cookieParser());
 
 /* DEFINE YOUR ROUTES HERE */
+
+app.use("/auth", authRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
