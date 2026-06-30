@@ -11,6 +11,10 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRY: z.string().default("15m"),
   JWT_REFRESH_EXPIRY: z.string().default("7d"),
   REFRESH_TOKEN_EXPIRY_DAYS: z.coerce.number().default(7),
+  POSTGRES_USER: z.string(),
+  POSTGRES_PASSWORD: z.string(),
+  POSTGRES_DB: z.string(),
+  POSTGRES_PORT: z.coerce.number().default(5432),
 });
 
 const parsedSchema = envSchema.safeParse(process.env);

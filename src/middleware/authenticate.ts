@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
-import { JwtPayload } from "../types/types";
+import { JwtPayload } from "../types";
 
 // Extend Express Request to include user
 declare global {

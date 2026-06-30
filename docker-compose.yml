@@ -1,0 +1,25 @@
+services:
+  # Your Express app
+  app:
+    build: . # Build using the Dockerfile in this directory
+    ports:
+      - "${PORT}:${PORT}" # host:container port mapping
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/mydb
+    depends_on:
+      - db # Wait for db to start first
+
+  # Postgres database
+  db:
+    image: postgres:16 # Use official Postgres image
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist data between restarts
+
+volumes:
+  postgres_data: # Named volume so data survives container restarts
