@@ -5,7 +5,7 @@ services:
     ports:
       - "${PORT}:${PORT}" # host:container port mapping
     environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/mydb
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
     depends_on:
       - db # Wait for db to start first
 
