@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as authService from "./auth.service";
 import { env } from "../../config/env";
+import { LoginInput } from "./auth.schema";
 
 // Helper to set refresh token as httpOnly cookie
 const setRefreshTokenCookie = (res: Response, token: string) => {
@@ -19,9 +20,7 @@ export const register = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password } = req.body;
-
-    await authService.register(email, password);
+    await authService.register(req.body);
     res.status(201).json({ message: "Account created successfully" });
   } catch (error) {
     next(error);
@@ -35,11 +34,7 @@ export const login = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password } = req.body;
-    const { accessToken, refreshToken } = await authService.login(
-      email,
-      password,
-    );
+    const { accessToken, refreshToken } = await authService.login(req.body);
 
     setRefreshTokenCookie(res, refreshToken);
     res.status(200).json({ accessToken });

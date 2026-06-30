@@ -11,6 +11,7 @@ import {
   getUserByID,
   deleteUserExpiredTokens,
 } from "./auth.repository";
+import { LoginInput, RegisterInput } from "./auth.schema";
 
 const SALT_ROUNDS = 10;
 const getRefreshTokenExpiry = () => {
@@ -35,24 +36,28 @@ const generateTokens = (userID: string, userEmail: string) => {
   return { accessToken, refreshToken };
 };
 
-export const register = async (email: string, plainPassword: string) => {
+export const register = async (input: RegisterInput) => {
   //validate email
-  const emailIsUsed = (await getUserByEmail(email)) === null ? false : true;
+  const emailIsUsed =
+    (await getUserByEmail(input.email)) === null ? false : true;
   if (emailIsUsed) throw new Error("Email already in use");
 
   //hash password
-  const passwordHash = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-  const user = await createUser(email, passwordHash);
+  const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+  const user = await createUser(input.email, passwordHash);
 
   return user;
 };
 
-export const login = async (email: string, password: string) => {
-  const user = await getUserByEmail(email);
+export const login = async (input: LoginInput) => {
+  const user = await getUserByEmail(input.email);
 
   if (!user) throw new Error("Email or password is wrong");
 
-  const passwordMatch = await bcrypt.compare(password, user.password_hash);
+  const passwordMatch = await bcrypt.compare(
+    input.password,
+    user.password_hash,
+  );
 
   if (!passwordMatch) throw new Error("Email or password is wrong");
 
