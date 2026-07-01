@@ -1,4 +1,5 @@
 import express, { ErrorRequestHandler } from "express";
+import { ZodError } from "zod";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
@@ -41,13 +42,16 @@ app.use((req, res) => {
 
 //Global error handler
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  if (err instanceof ZodError) {
+    return res.status(400).json({ error: err.issues });
+  }
+
   if (err instanceof Error) {
     console.error(err.message, err.stack);
   } else console.error(err);
 
   const status = typeof err.status === "number" ? err.status : 500;
-
-  res.status(status).json({ error: "Internal Server Error" });
+  res.status(status).json({ error: err.message || "Internal Server Error" });
 };
 
 app.use(errorHandler);
