@@ -7,7 +7,7 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageProvider: "v8",
-  setupFilesAfterFramework: ["./src/tests/setup.ts"],
+  setupFilesAfterEnv: ["./src/tests/setup.ts"],
 };
 
 export default config;
