@@ -12,6 +12,7 @@ import {
   deleteUserExpiredTokens,
 } from "./auth.repository";
 import { LoginInput, RegisterInput } from "./auth.schema";
+import { AppError } from "../../middleware/AppError";
 
 const SALT_ROUNDS = 10;
 const getRefreshTokenExpiry = () => {
@@ -40,7 +41,7 @@ export const register = async (input: RegisterInput) => {
   //validate email
   const emailIsUsed =
     (await getUserByEmail(input.email)) === null ? false : true;
-  if (emailIsUsed) throw new Error("Email already in use");
+  if (emailIsUsed) throw new AppError("Email already in use", 409);
 
   //hash password
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
@@ -52,14 +53,14 @@ export const register = async (input: RegisterInput) => {
 export const login = async (input: LoginInput) => {
   const user = await getUserByEmail(input.email);
 
-  if (!user) throw new Error("Email or password is wrong");
+  if (!user) throw new AppError("Email or password is wrong", 401);
 
   const passwordMatch = await bcrypt.compare(
     input.password,
     user.password_hash,
   );
 
-  if (!passwordMatch) throw new Error("Email or password is wrong");
+  if (!passwordMatch) throw new AppError("Email or password is wrong", 401);
 
   await deleteUserExpiredTokens(user.id);
 
@@ -72,10 +73,10 @@ export const login = async (input: LoginInput) => {
 export const refresh = async (token: string) => {
   const currentToken = await getRefreshToken(token);
 
-  if (!currentToken) throw new Error("Invalid refresh token.");
+  if (!currentToken) throw new AppError("Invalid refresh token.", 401);
 
   if (currentToken.expires_at < new Date())
-    throw new Error("Refresh token expired");
+    throw new AppError("Refresh token expired", 401);
 
   jwt.verify(token, env.JWT_SECRET);
 
@@ -91,5 +92,5 @@ export const refresh = async (token: string) => {
 
 export const logout = async (token: string) => {
   const deleted = await deleteRefreshToken(token);
-  if (!deleted) throw new Error("Invalid refresh token");
+  if (!deleted) throw new AppError("Invalid refresh token", 401);
 };
