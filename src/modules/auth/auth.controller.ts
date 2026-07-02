@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as authService from "./auth.service";
 import { env } from "../../config/env";
-import { LoginInput } from "./auth.schema";
+import { AppError } from "../../middleware/AppError";
 
 // Helper to set refresh token as httpOnly cookie
 const setRefreshTokenCookie = (res: Response, token: string) => {
@@ -51,7 +51,7 @@ export const refresh = async (
 ) => {
   try {
     const token = req.cookies.refreshToken;
-    if (!token) return next(new Error("No refresh token provided"));
+    if (!token) return next(new AppError("No refresh token provided", 401));
 
     const { accessToken, refreshToken } = await authService.refresh(token);
 
@@ -70,7 +70,7 @@ export const logout = async (
 ) => {
   try {
     const token = req.cookies.refreshToken;
-    if (!token) return next(new Error("No refresh token provided"));
+    if (!token) return next(new AppError("No refresh token provided", 401));
 
     await authService.logout(token);
     res.clearCookie("refreshToken");

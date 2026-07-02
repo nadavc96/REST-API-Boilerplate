@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { JwtPayload } from "../types";
+import { AppError } from "./AppError";
 
 // Extend Express Request to include user
 declare global {
@@ -22,7 +23,7 @@ export const authenticate = (
 
   // Check if Authorization header exists and starts with Bearer
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new Error("No token provided"));
+    return next(new AppError("No token provided", 401));
   }
 
   const token = authHeader.split(" ")[1];
@@ -32,6 +33,6 @@ export const authenticate = (
     req.user = decoded;
     next();
   } catch {
-    next(new Error("Invalid or expired token"));
+    next(new AppError("Invalid or expired token", 401));
   }
 };
