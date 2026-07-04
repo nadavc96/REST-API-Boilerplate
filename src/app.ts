@@ -4,8 +4,10 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 import { env } from "./config/env";
 import authRouter from "./modules/auth/auth.routes";
+import logger from "./config/logger";
 
 const app = express();
 
@@ -16,6 +18,15 @@ app.use(
   cors({
     origin: env.ALLOWED_ORIGINS,
     credentials: true,
+  }),
+);
+
+// HTTP request logging
+app.use(
+  morgan("combined", {
+    stream: {
+      write: (message) => logger.http(message.trim()),
+    },
   }),
 );
 
@@ -47,8 +58,8 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   }
 
   if (err instanceof Error) {
-    console.error(err.message, err.stack);
-  } else console.error(err);
+    logger.error(err.message, { stack: err.stack });
+  } else logger.error("Unknown error", { err });
 
   const status = typeof err.status === "number" ? err.status : 500;
   res.status(status).json({ error: err.message || "Internal Server Error" });
