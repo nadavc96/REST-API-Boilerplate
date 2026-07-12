@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx dotenv-cli -e .env.test jest",
+    "test": "docker-compose up -d db-test && npx dotenv-cli -e .env.test jest",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
