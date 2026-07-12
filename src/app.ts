@@ -8,6 +8,7 @@ import morgan from "morgan";
 import { env } from "./config/env";
 import authRouter from "./modules/auth/auth.routes";
 import logger from "./config/logger";
+import passport from "./config/passport";
 
 const app = express();
 
@@ -42,6 +43,8 @@ app.use(limiter);
 
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
+
+app.use(passport.initialize());
 
 /* DEFINE YOUR ROUTES HERE */
 

@@ -16,6 +16,10 @@ const envSchema = z.object({
   POSTGRES_PASSWORD: z.string(),
   POSTGRES_DB: z.string(),
   POSTGRES_PORT: z.coerce.number().default(5432),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_CALLBACK_URL: z.string(),
+  FRONTEND_URL: z.url(),
 });
 
 const parsedSchema = envSchema.safeParse(process.env);

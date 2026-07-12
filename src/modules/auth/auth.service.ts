@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { StringValue } from "ms";
 import { env } from "../../config/env";
 import {
   getUserByEmail,
@@ -13,29 +12,9 @@ import {
 } from "./auth.repository";
 import { LoginInput, RegisterInput } from "./auth.schema";
 import { AppError } from "../../middleware/AppError";
+import { getRefreshTokenExpiry, generateTokens } from "../../utils/jwt";
 
 const SALT_ROUNDS = 10;
-const getRefreshTokenExpiry = () => {
-  return new Date(
-    Date.now() + env.REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
-  );
-};
-
-const generateTokens = (userID: string, userEmail: string) => {
-  // Access token - short lived
-  const accessToken = jwt.sign(
-    { userID: userID, email: userEmail },
-    env.JWT_SECRET,
-    { expiresIn: env.JWT_ACCESS_EXPIRY as StringValue },
-  );
-
-  // Refresh token - long lived
-  const refreshToken = jwt.sign({ userID: userID }, env.JWT_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRY as StringValue,
-  });
-
-  return { accessToken, refreshToken };
-};
 
 export const register = async (input: RegisterInput) => {
   //validate email

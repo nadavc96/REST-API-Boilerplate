@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import * as authService from "./auth.service";
 import { env } from "../../config/env";
 import { AppError } from "../../middleware/AppError";
-
+import { generateTokens, getRefreshTokenExpiry } from "../../utils/jwt";
+import { getUserByEmail, saveRefreshToken } from "./auth.repository";
 // Helper to set refresh token as httpOnly cookie
 const setRefreshTokenCookie = (res: Response, token: string) => {
   res.cookie("refreshToken", token, {
@@ -75,6 +76,28 @@ export const logout = async (
     await authService.logout(token);
     res.clearCookie("refreshToken");
     res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleCallBack = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user = req.user as { id: string; email: string };
+
+    if (!user) return next(new AppError("Authentication failed", 401));
+
+    const { accessToken, refreshToken } = generateTokens(user.id, user.email);
+    await saveRefreshToken(user.id, refreshToken, getRefreshTokenExpiry());
+    setRefreshTokenCookie(res, refreshToken);
+
+    // Redirects to frontend with access token
+    // Change this to res.redirect(`${env.FRONTEND_URL}?accessToken=${accessToken}`) in production
+    res.status(200).send({ accessToken });
   } catch (error) {
     next(error);
   }
