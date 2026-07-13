@@ -2,6 +2,14 @@
 
 A production-ready Express + TypeScript starter with JWT authentication, refresh token rotation, Google OAuth, input validation, rate limiting, and PostgreSQL. Built so any project can start right instead of refactoring later.
 
+## Live Demo
+
+Base URL: `https://rest-api-boilerplate-production.up.railway.app`
+
+> Note: The free tier may have a cold start — the first request might take a few seconds.
+
+Test it using the included [Postman collection](#postman-collection).
+
 ## Features
 
 - **Authentication** — register, login, logout, and refresh token rotation using JWT
@@ -89,11 +97,11 @@ npm install
 
 ### 2. Set up environment variables
 
-Copy the example file and fill in your own values:
-
 ```bash
 cp .env.example .env
 ```
+
+Fill in your own values — see [Environment Variables](#environment-variables) below.
 
 ### 3. Start the database
 
@@ -122,22 +130,16 @@ The API will be running at `http://localhost:8000` (or whatever `PORT` you set).
 3. Go to **APIs & Services** → **OAuth consent screen** → set up as External
 4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
 5. Application type: **Web application**
-6. Add authorized redirect URI: `http://localhost:<PORT>/auth/google/callback`
+6. Add authorized redirect URIs:
+   - `http://localhost:<PORT>/auth/google/callback` (development)
+   - `https://your-production-url.com/auth/google/callback` (production)
 7. Copy the **Client ID** and **Client Secret** to your `.env`
-
-change `.env` to match your values:
-
-```
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:<PORT>/auth/google/callback
-```
 
 ## Environment Variables
 
 | Variable                    | Description                                  | Default |
 | --------------------------- | -------------------------------------------- | ------- |
-| `PORT`                      | Port the app runs on                         | `3000`  |
+| `PORT`                      | Port the app runs on                         | —       |
 | `DATABASE_URL`              | Full Postgres connection string              | —       |
 | `ALLOWED_ORIGINS`           | Comma-separated list of allowed CORS origins | —       |
 | `JWT_SECRET`                | Secret used to sign JWTs                     | —       |
@@ -147,6 +149,7 @@ GOOGLE_CALLBACK_URL=http://localhost:<PORT>/auth/google/callback
 | `GOOGLE_CLIENT_ID`          | Google OAuth client ID                       | —       |
 | `GOOGLE_CLIENT_SECRET`      | Google OAuth client secret                   | —       |
 | `GOOGLE_CALLBACK_URL`       | Google OAuth redirect URI                    | —       |
+| `FRONTEND_URL`              | Frontend URL for OAuth redirect              | —       |
 | `POSTGRES_USER`             | Postgres username (Docker Compose)           | —       |
 | `POSTGRES_PASSWORD`         | Postgres password (Docker Compose)           | —       |
 | `POSTGRES_DB`               | Postgres database name (Docker Compose)      | —       |
@@ -216,7 +219,7 @@ Requires a valid access token (`Authorization: Bearer <token>`). Deletes the ref
 
 ### `GET /auth/google`
 
-Redirects to Google login page.
+Redirects to Google login page. Open in a browser — does not work in Postman.
 
 ### `GET /auth/google/callback`
 
@@ -228,7 +231,17 @@ Google redirects here after login. Returns an access token and sets the refresh 
 { "accessToken": "eyJhbGciOi..." }
 ```
 
-> To redirect to a frontend instead, update `googleCallBack` in `auth.controller.ts` to use `res.redirect(\`${env.FRONTEND_URL}?accessToken=${accessToken}\`)`and add`FRONTEND_URL`to your`.env`.
+> To redirect to a frontend instead, update `googleCallBack` in `auth.controller.ts` to use `res.redirect(`${env.FRONTEND_URL}?accessToken=${accessToken}`)` and add `FRONTEND_URL` to your `.env`.
+
+## Postman Collection
+
+A Postman collection is included at `postman_collection.json`. Import it into Postman to test all endpoints.
+
+The collection includes:
+
+- Pre-configured request bodies
+- Automatic access token saving after login/refresh
+- Authorization header pre-filled for logout
 
 ## Authentication Flow
 
@@ -269,7 +282,8 @@ Then run migrations against the test database:
 
 ```bash
 # PowerShell
-$env:DATABASE_URL="postgres://user:password@localhost:5433/mydb_test"; npm run migrate:up
+$env:DATABASE_URL="postgres://user:password@localhost:5433/mydb_test"
+npm run migrate:up
 
 # Mac/Linux
 DATABASE_URL=postgres://user:password@localhost:5433/mydb_test npm run migrate:up
@@ -283,8 +297,6 @@ npm test
 
 ## Decisions
 
-A few notes on the trade-offs made in this boilerplate, for context in interviews or for whoever extends it:
-
 - **Zod over Joi/Yup** — Zod gives you the validation schema and the inferred TypeScript type from a single definition, so the validation logic and the types never drift apart.
 - **Refresh token rotation** — storing refresh tokens in the database (rather than treating them as stateless JWTs) means they can be revoked on logout. Access tokens stay stateless and short-lived to limit exposure if one leaks.
 - **Repository pattern** — all SQL lives in `*.repository.ts` files. Services never write queries directly, which keeps business logic testable without a real database and makes the database layer swappable.
@@ -295,7 +307,7 @@ A few notes on the trade-offs made in this boilerplate, for context in interview
 
 ## Docker
 
-`docker-compose.yml` is intended for **local development only** — it spins up Postgres (and optionally the app) so you don't need anything installed locally beyond Docker and Node.
+`docker-compose.yml` is intended for **local development only** — it spins up Postgres so you don't need anything installed locally beyond Docker and Node.
 
 ```bash
 # Start just the dev database
@@ -312,6 +324,7 @@ In production, this project is designed to pair a managed Postgres provider (e.g
 
 ## Roadmap
 
+- [ ] OAuth integration tests
 - [ ] Role-based access control (RBAC) example
 - [ ] OpenAPI/Swagger docs
 - [ ] Password reset flow
