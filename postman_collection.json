@@ -1,0 +1,158 @@
+{
+  "info": {
+    "_postman_id": "af08cf8d-2369-4ec7-803d-7e7626c97273",
+    "name": "REST API Boilerplate",
+    "description": "A Postman collection for testing the REST API Boilerplate endpoints. Set the base_url variable to your API URL before running requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56588379",
+    "_collection_link": "https://go.postman.co/collection/56588379-af08cf8d-2369-4ec7-803d-7e7626c97273?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"your@email.com\",\r\n    \"password\": \"yourpassword\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://rest-api-boilerplate-production.up.railway.app/auth/register",
+          "protocol": "https",
+          "host": ["rest-api-boilerplate-production", "up", "railway", "app"],
+          "path": ["auth", "register"]
+        },
+        "description": "## Register\n\nCreates a new user account by registering with an email address and password.\n\n### Request Body\n\n| Field | Type | Required | Description |\n| --- | --- | --- | --- |\n| `email` | string | Yes | The email address of the new user. |\n| `password` | string | Yes | The password for the new account. |\n\n### Example Request Body\n\n``` json\n{\n    \"email\": \"user@example.com\",\n    \"password\": \"yourpassword\"\n}\n\n ```\n\n### Responses\n\n| Status | Description |\n| --- | --- |\n| `201` | User successfully registered. |\n| `400` | Bad request — missing or invalid fields. |\n| `409` | Conflict — a user with this email already exists. |"
+      },
+      "response": []
+    },
+    {
+      "name": "login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "pm.collectionVariables.set(\"access_token\", response.accessToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"your@email.com\",\r\n    \"password\": \"yourpassword\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://rest-api-boilerplate-production.up.railway.app/auth/login",
+          "protocol": "https",
+          "host": ["rest-api-boilerplate-production", "up", "railway", "app"],
+          "path": ["auth", "login"]
+        },
+        "description": "Authenticates a user and returns an access token.\n\n## Request Body\n\n| Field | Type | Required | Description |\n| --- | --- | --- | --- |\n| `email` | string | Yes | The registered email address of the user. |\n| `password` | string | Yes | The user's password. |\n\n## Example Request Body\n\n``` json\n{\n    \"email\": \"your@email.com\",\n    \"password\": \"yourpassword\"\n}\n\n ```\n\n## Responses\n\n| Status | Description |\n| --- | --- |\n| `200 OK` | Login successful. Returns an access token. |\n| `400 Bad Request` | Missing or invalid request body fields. |\n| `401 Unauthorized` | Invalid email or password. |"
+      },
+      "response": []
+    },
+    {
+      "name": "refresh",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "pm.collectionVariables.set(\"access_token\", response.accessToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "https://rest-api-boilerplate-production.up.railway.app/auth/refresh",
+          "protocol": "https",
+          "host": ["rest-api-boilerplate-production", "up", "railway", "app"],
+          "path": ["auth", "refresh"]
+        },
+        "description": "## Refresh\n\nRefreshes the current session by issuing a new access token using a valid refresh token.\n\nRefreshes the access token using the refresh token stored in the httpOnly cookie. No request body needed — the cookie is sent automatically by the browser.\n\n### Responses\n\n| Status | Description |\n| --- | --- |\n| `200 OK` | Token successfully refreshed. Returns a new access token. |\n| `400 Bad Request` | Missing or invalid request body fields. |\n| `401 Unauthorized` | The refresh token is invalid or has expired. |"
+      },
+      "response": []
+    },
+    {
+      "name": "logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "https://rest-api-boilerplate-production.up.railway.app/auth/logout",
+          "protocol": "https",
+          "host": ["rest-api-boilerplate-production", "up", "railway", "app"],
+          "path": ["auth", "logout"]
+        },
+        "description": "# Logout\n\nLogs out the authenticated user by invalidating their current session/token. After a successful logout, the provided access token will no longer be valid for subsequent requests.\n\n## Request\n\n**Method & URL**\n\n```\nPOST {{base_url}}/auth/logout\n\n ```\n\n**Required Headers**\n\n| Header | Value |\n| --- | --- |\n| `Authorization` | `Bearer {{access_token}}` |\n\n## Response\n\n**200 OK**\n\n``` json\n{\n  \"message\": \"Logged out successfully\"\n}\n\n ```\n\n## Notes\n\n- The `{{access_token}}` must be obtained from the **login** endpoint prior to calling this endpoint.\n    \n- Once logged out, the access token is invalidated and cannot be reused. You will need to log in again to obtain a new token."
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "access_token",
+      "value": ""
+    }
+  ]
+}
