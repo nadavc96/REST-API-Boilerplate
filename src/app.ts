@@ -2,7 +2,7 @@ import express, { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
 import helmet from "helmet";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
+import { globalRateLimiter } from "./middleware/rateLimiter";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { env } from "./config/env";
@@ -32,14 +32,7 @@ app.use(
 );
 
 //Rate limit
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use(limiter);
+app.use(globalRateLimiter);
 
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());

@@ -5,10 +5,9 @@ import {
   getUserByEmail,
   createUser,
   saveRefreshToken,
-  getRefreshToken,
+  getUserIdByRefreshToken,
   deleteRefreshToken,
   getUserByID,
-  deleteUserExpiredTokens,
 } from "./auth.repository";
 import { LoginInput, RegisterInput } from "./auth.schema";
 import { AppError } from "../../middleware/AppError";
@@ -41,8 +40,6 @@ export const login = async (input: LoginInput) => {
 
   if (!passwordMatch) throw new AppError("Email or password is wrong", 401);
 
-  await deleteUserExpiredTokens(user.id);
-
   const { accessToken, refreshToken } = generateTokens(user.id, user.email);
   //save token to the DB
   await saveRefreshToken(user.id, refreshToken, getRefreshTokenExpiry());
@@ -50,16 +47,13 @@ export const login = async (input: LoginInput) => {
 };
 
 export const refresh = async (token: string) => {
-  const currentToken = await getRefreshToken(token);
+  const userId = await getUserIdByRefreshToken(token);
 
-  if (!currentToken) throw new AppError("Invalid refresh token.", 401);
-
-  if (currentToken.expires_at < new Date())
-    throw new AppError("Refresh token expired", 401);
+  if (!userId) throw new AppError("Invalid refresh token", 401);
 
   jwt.verify(token, env.JWT_SECRET);
 
-  const user = await getUserByID(currentToken.user_id);
+  const user = await getUserByID(userId);
 
   await deleteRefreshToken(token);
 

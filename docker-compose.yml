@@ -21,6 +21,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data # Persist data between restarts
 
+  # Redis cache and rate limiting store
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT}:6379" # host:container port mapping
+    volumes:
+      - redis_data:/data # Persist data between restarts
+
   # Postgres database (testing)
   db-test:
     image: postgres:16
@@ -33,6 +41,16 @@ services:
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
 
+  # Redis for testing
+  redis-test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_test_data:/data
+
 volumes:
   postgres_data: # Named volume so data survives container restarts
-  postgres_test_data:
+  postgres_test_data: # Named volume for test database
+  redis_data: # Named volume for Redis data
+  redis_test_data:

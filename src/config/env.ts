@@ -20,6 +20,8 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_CALLBACK_URL: z.string(),
   FRONTEND_URL: z.url(),
+  REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 });
 
 const parsedSchema = envSchema.safeParse(process.env);

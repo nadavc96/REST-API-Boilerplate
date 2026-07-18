@@ -1,4 +1,5 @@
 import { pool } from "../../db/pool";
+import redis from "../../config/redis";
 
 // Add your own queries here as your app grows
 
@@ -38,15 +39,8 @@ export const getUserByID = async (id: string) => {
   return result.rows[0] || null;
 };
 
-export const getRefreshToken = async (token: string) => {
-  const userToken = await pool.query(
-    `SELECT id, user_id, token, expires_at
-    FROM refresh_tokens
-    WHERE token=$1`,
-    [token],
-  );
-
-  return userToken.rows[0] || null;
+export const getUserIdByRefreshToken = async (token: string) => {
+  return await redis.get(`refreshToken:${token}`);
 };
 
 export const saveRefreshToken = async (
@@ -54,32 +48,14 @@ export const saveRefreshToken = async (
   token: string,
   expiresAt: Date,
 ) => {
-  // Returns the saved token row
-  const result = await pool.query(
-    `INSERT INTO refresh_tokens (user_id, token, expires_at)
-        VALUES ($1, $2, $3)
-        RETURNING id, user_id, expires_at`,
-    [userID, token, expiresAt],
-  );
-
-  return result.rows[0];
+  //Saves refresh token to Redis with automatic expiry
+  const seconds = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
+  await redis.set(`refreshToken:${token}`, userID, { EX: seconds });
 };
 
 export const deleteRefreshToken = async (token: string) => {
   // Returns true if deleted, false if token not found
-  const result = await pool.query(
-    `DELETE FROM refresh_tokens
-        WHERE token=$1`,
-    [token],
-  );
+  const result = await redis.del(`refreshToken:${token}`);
 
-  return (result.rowCount ?? 0) > 0;
-};
-
-export const deleteUserExpiredTokens = async (userId: string) => {
-  await pool.query(
-    `DELETE FROM refresh_tokens
-     WHERE user_id=$1 AND expires_at < NOW()`,
-    [userId],
-  );
+  return result > 0;
 };

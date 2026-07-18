@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../app";
+import redis from "../config/redis";
 import { pool } from "../db/pool";
 
 const testUser = {
@@ -116,26 +117,24 @@ describe("POST /auth/refresh", () => {
       .set("Cookie", "refreshToken=invalidtoken");
 
     expect(res.statusCode).toBe(401);
-    expect(res.body.error).toBe("Invalid refresh token.");
+    expect(res.body.error).toBe("Invalid refresh token");
   });
 
   it("should return 401 if token is expired", async () => {
     const { agent } = await registerAndLoginWithAgent();
 
-    await pool.query(
-      `UPDATE refresh_tokens SET expires_at = NOW() - INTERVAL '1 day'`,
-    );
+    await redis.flushAll();
+
     const res = await agent.post("/auth/refresh");
 
     expect(res.statusCode).toBe(401);
-    expect(res.body.error).toBe("Refresh token expired");
+    expect(res.body.error).toBe("Invalid refresh token");
   });
 });
 
 describe("POST /auth/logout", () => {
   it("should return 200 if user logged out", async () => {
     const { agent, accessToken } = await registerAndLoginWithAgent();
-
     const res = await agent
       .post("/auth/logout")
       .set("Authorization", `Bearer ${accessToken}`);

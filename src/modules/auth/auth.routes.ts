@@ -1,4 +1,5 @@
 import express from "express";
+import { authRateLimiter } from "../../middleware/rateLimiter";
 import { validate } from "../../middleware/validate";
 import { registerSchema, loginSchema } from "./auth.schema";
 import {
@@ -13,9 +14,9 @@ import passport from "../../config/passport";
 
 const router = express.Router();
 
-router.post("/register", validate(registerSchema), register);
+router.post("/register", authRateLimiter, validate(registerSchema), register);
 
-router.post("/login", validate(loginSchema), login);
+router.post("/login", authRateLimiter, validate(loginSchema), login);
 
 router.post("/refresh", refresh);
 

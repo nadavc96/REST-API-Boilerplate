@@ -87,12 +87,15 @@ export const googleCallBack = async (
   next: NextFunction,
 ) => {
   try {
-    const user = req.user as { id: string; email: string };
+    const user = req.user as { userId: string; email: string };
 
     if (!user) return next(new AppError("Authentication failed", 401));
 
-    const { accessToken, refreshToken } = generateTokens(user.id, user.email);
-    await saveRefreshToken(user.id, refreshToken, getRefreshTokenExpiry());
+    const { accessToken, refreshToken } = generateTokens(
+      user.userId,
+      user.email,
+    );
+    await saveRefreshToken(user.userId, refreshToken, getRefreshTokenExpiry());
     setRefreshTokenCookie(res, refreshToken);
 
     // Redirects to frontend with access token
