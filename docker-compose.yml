@@ -6,8 +6,10 @@ services:
       - "${PORT}:${PORT}" # host:container port mapping
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:${REDIS_PORT}
     depends_on:
       - db # Wait for db to start first
+      - redis
 
   # Postgres database (development)
   db:
