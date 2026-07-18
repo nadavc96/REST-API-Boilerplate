@@ -8,7 +8,10 @@ const createRateLimiter = (
   prefix: string,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const key = `${prefix}:${req.ip ?? "unknown"}`;
+    const ip = req.headers["x-forwarded-for"]?.toString().split(",")[0]
+      ? req.ip
+      : "unknown";
+    const key = `${prefix}:${ip}`;
     const current = await redis.incr(key);
 
     if (current === 1) {
